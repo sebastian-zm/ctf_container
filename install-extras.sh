@@ -49,7 +49,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nodejs
 
 # Install required global npm CLIs
 echo "Installing global npm CLIs..."
-npm install -g @openai/codex @google/gemini-cli @github/copilot-cli
+npm install -g @openai/codex @google/gemini-cli @github/copilot
 
 # Note: tshark may ask questions during install; ensure DEBIAN_FRONTEND=noninteractive is set in your container build
 
