@@ -16,6 +16,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     python3 \
     python3-dev \
     python3-pip \
+    python3-venv \
     openjdk-11-jdk-headless \
     binutils \
     hexedit \
@@ -32,17 +33,20 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 
 # Note: tshark may ask questions during install; ensure DEBIAN_FRONTEND=noninteractive is set in your container build
 
-echo "Installing Python packages (pip3)..."
+PYTHON_VENV_DIR="/opt/python-tools"
+PYTHON_VENV_BIN="${PYTHON_VENV_DIR}/bin"
+PYTHON_VENV_PATH_SNIPPET="/etc/profile.d/python-tools-path.sh"
 
-# Debian-based images mark system Python as externally managed; detect support for
-# --break-system-packages so pip can still install tools we need system-wide.
-PIP_INSTALL_FLAGS=(--no-cache-dir)
-if python3 -m pip help install 2>&1 | grep -q -- '--break-system-packages'; then
-  PIP_INSTALL_FLAGS+=("--break-system-packages")
+echo "Creating Python virtual environment at ${PYTHON_VENV_DIR}..."
+if [ ! -d "${PYTHON_VENV_DIR}" ]; then
+  python3 -m venv "${PYTHON_VENV_DIR}"
+else
+  echo "Virtual environment already exists; reusing."
 fi
 
-python3 -m pip install "${PIP_INSTALL_FLAGS[@]}" --upgrade pip
-python3 -m pip install "${PIP_INSTALL_FLAGS[@]}" \
+echo "Installing Python packages inside virtual environment..."
+"${PYTHON_VENV_BIN}/python" -m pip install --no-cache-dir --upgrade pip
+"${PYTHON_VENV_BIN}/python" -m pip install --no-cache-dir \
     requests \
     numpy \
     pandas \
@@ -54,6 +58,13 @@ python3 -m pip install "${PIP_INSTALL_FLAGS[@]}" \
     pyzbar \
     pymodbus \
     volatility3
+
+echo "Adding ${PYTHON_VENV_BIN} to global PATH..."
+cat <<'EOF' > "${PYTHON_VENV_PATH_SNIPPET}"
+if [ -d /opt/python-tools/bin ]; then
+  export PATH="/opt/python-tools/bin:${PATH}"
+fi
+EOF
 
 # JADX (CLI)
 JADX_VERSION="1.5.3"
