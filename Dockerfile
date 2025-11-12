@@ -7,6 +7,7 @@ COPY install-extras.sh /tmp/install-extras.sh
 RUN chmod +x /tmp/install-extras.sh \
     && /tmp/install-extras.sh \
     && rm /tmp/install-extras.sh
+EXPOSE 1455
 COPY llms.md AGENTS.md
 COPY llms.md GEMINI.md
 
