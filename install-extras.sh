@@ -33,8 +33,16 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 # Note: tshark may ask questions during install; ensure DEBIAN_FRONTEND=noninteractive is set in your container build
 
 echo "Installing Python packages (pip3)..."
-python3 -m pip install --no-cache-dir --upgrade pip
-python3 -m pip install --no-cache-dir \
+
+# Debian-based images mark system Python as externally managed; detect support for
+# --break-system-packages so pip can still install tools we need system-wide.
+PIP_INSTALL_FLAGS=(--no-cache-dir)
+if python3 -m pip help install 2>&1 | grep -q -- '--break-system-packages'; then
+  PIP_INSTALL_FLAGS+=("--break-system-packages")
+fi
+
+python3 -m pip install "${PIP_INSTALL_FLAGS[@]}" --upgrade pip
+python3 -m pip install "${PIP_INSTALL_FLAGS[@]}" \
     requests \
     numpy \
     pandas \
@@ -69,4 +77,3 @@ fi
 
 echo "Done. Tools installed."
 echo "Useful CLIs installed: jadx, apktool, binwalk, steghide, tshark, ffmpeg, sox, aircrack-ng, hexedit, binutils (objdump/readelf/etc.), python3/pip (with packages), openjdk headless."
-
